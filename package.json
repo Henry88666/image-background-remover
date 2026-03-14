@@ -1,0 +1,22 @@
+{
+  "name": "image-background-remover",
+  "version": "1.0.0",
+  "description": "A lightweight online image background removal tool",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": [
+    "image",
+    "background-removal",
+    "cloudflare",
+    "remove-bg"
+  ],
+  "author": "Henry88666",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
