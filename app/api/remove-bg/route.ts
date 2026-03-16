@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
-    // 解析上传的文件
     const formData = await request.formData()
     const imageFile = formData.get('image') as File
 
@@ -13,7 +14,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证文件类型
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
     if (!allowedTypes.includes(imageFile.type)) {
       return NextResponse.json(
@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 验证文件大小（10MB）
     const maxSize = 10 * 1024 * 1024
     if (imageFile.size > maxSize) {
       return NextResponse.json(
@@ -31,10 +30,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 读取图片数据
     const imageBuffer = await imageFile.arrayBuffer()
 
-    // 调用 Remove.bg API
     const removeBgForm = new FormData()
     removeBgForm.append('image_file', new Blob([imageBuffer]), 'image.png')
     removeBgForm.append('size', 'auto')
@@ -58,21 +55,34 @@ export async function POST(request: NextRequest) {
     if (!removeBgResponse.ok) {
       const errorText = await removeBgResponse.text()
       console.error('Remove.bg API error:', errorText)
-      return NextResponse.json(
-        { error: 'Background removal failed. Please try again.' },
-        { status: 500 }
-      )
+      
+      try {
+        const errorJson = JSON.parse(errorText)
+        return NextResponse.json(
+          { error: errorJson.errors?.[0]?.title || 'Background removal failed' },
+          { status: 500 }
+        )
+      } catch {
+        return NextResponse.json(
+          { error: 'Background removal failed. Please try again.' },
+          { status: 500 }
+        )
+      }
     }
 
-    // 获取处理后的图片
     const resultBlob = await removeBgResponse.blob()
-
-    // 返回结果
-    return new NextResponse(resultBlob, {
+    const arrayBuffer = await resultBlob.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    
+    return NextResponse.json({
+      success: true,
+      image: `data:image/png;base64,${base64}`
+    }, {
       headers: {
-        'Content-Type': 'image/png',
-        'Content-Disposition': 'attachment; filename="no-bg.png"',
-      },
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
     })
 
   } catch (error) {
@@ -82,4 +92,14 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
