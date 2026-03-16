@@ -1,0 +1,6 @@
+name = "image-background-remover"
+compatibility_date = "2026-03-16"
+pages_build = { dir = ".next" }
+
+[vars]
+REMOVE_BG_API_KEY = "chReUzif6GDJswfDzY4b8L1n"
