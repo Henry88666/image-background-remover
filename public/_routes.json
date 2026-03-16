@@ -1,5 +1,9 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": ["/_next/static/*"]
+  "routes": [
+    { "pattern": "/api/remove-bg", "overrides": { "worker": "1" } },
+    { "pattern": "/_next/static/*" },
+    { "pattern": "/favicon.ico" },
+    { "pattern": "/.*", "overrides": { "Site": "index.html" } }
+  ]
 }
